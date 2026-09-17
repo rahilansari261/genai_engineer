@@ -1,0 +1,60 @@
+[
+  {"id": "n01", "category": "pets", "text": "How to raise a happy, well-behaved puppy: stay consistent with commands, reward good behavior immediately, and start socializing them with new people and dogs as early as possible."},
+  {"id": "n02", "category": "pets", "text": "My cat keeps knocking things off the table on purpose — turns out it's leftover hunting instinct, testing whether things move before they pounce."},
+  {"id": "n03", "category": "pets", "text": "For a nervous dog, introduce a new harness slowly: let them sniff it, treat them for staying calm near it, then build up to actually wearing it indoors first."},
+  {"id": "n04", "category": "pets", "text": "Litter box training a new kitten is mostly about placement — keep it in a quiet, consistent spot and clean it daily so they don't decide somewhere else is cleaner."},
+  {"id": "n05", "category": "pets", "text": "Best chew toys for teething puppies are ones with some give, like rubber kongs — too hard and they can crack a tooth, too soft and it's shredded in a day."},
+  {"id": "n06", "category": "pets", "text": "Signs a dog is stressed at the vet: lip licking, yawning when not tired, tucked tail, and trying to hide behind your legs in the waiting room."},
+
+  {"id": "n07", "category": "cooking", "text": "Simple weeknight pasta: garlic slowly cooked in olive oil until golden, then tossed with the pasta and a splash of the starchy cooking water to make it glossy."},
+  {"id": "n08", "category": "cooking", "text": "Getting a good sear on a steak means a screaming hot pan, patting the meat completely dry first, and not moving it for at least two minutes."},
+  {"id": "n09", "category": "cooking", "text": "Sourdough starter needs feeding roughly once a day at room temperature, or once a week if you keep it in the fridge and only bake occasionally."},
+  {"id": "n10", "category": "cooking", "text": "Quick pickled onions: thin slices in vinegar, a bit of sugar and salt, ready to eat in about 30 minutes and they keep in the fridge for weeks."},
+  {"id": "n11", "category": "cooking", "text": "Roasting vegetables without them turning soggy comes down to not overcrowding the pan — give every piece room so it roasts instead of steams."},
+  {"id": "n12", "category": "cooking", "text": "Homemade pizza dough doesn't need a stand mixer — a wooden spoon and then a few minutes of hand kneading gets it smooth enough."},
+
+  {"id": "n13", "category": "space", "text": "The night sky looks different by season because Earth's orbit points us toward a different slice of the galaxy every few months."},
+  {"id": "n14", "category": "space", "text": "Astronomers measure distance to nearby stars using parallax — how much a star appears to shift against the background as Earth orbits the sun."},
+  {"id": "n15", "category": "space", "text": "Past a black hole's event horizon, not even light moves fast enough to escape the gravity — that boundary is what actually makes it 'black'."},
+  {"id": "n16", "category": "space", "text": "A meteoroid is the rock in space, a meteor is the streak of light when it burns up in the atmosphere, and a meteorite is whatever survives to hit the ground."},
+  {"id": "n17", "category": "space", "text": "Mars looks red from Earth because its surface is covered in iron oxide dust — basically the whole planet is rusted."},
+  {"id": "n18", "category": "space", "text": "The James Webb telescope sees in infrared instead of visible light, which lets it look through dust clouds that would block a normal telescope's view."},
+
+  {"id": "n19", "category": "personal-finance", "text": "The 50/30/20 budget: 50% of income to needs, 30% to wants, 20% to savings and debt payoff — simple enough to actually stick to."},
+  {"id": "n20", "category": "personal-finance", "text": "An emergency fund should exist before you start investing seriously, otherwise a surprise expense forces you to sell investments at a bad time."},
+  {"id": "n21", "category": "personal-finance", "text": "Compound interest looks boring year one and shocking by year twenty — most of the growth happens in the back half, not the front."},
+  {"id": "n22", "category": "personal-finance", "text": "A Roth account is taxed now and tax-free later; a traditional account is the opposite — which one wins depends on whether your tax rate is higher now or in retirement."},
+  {"id": "n23", "category": "personal-finance", "text": "Went through my card statement and found four subscriptions I forgot I was paying for — worth doing that check every few months."},
+  {"id": "n24", "category": "personal-finance", "text": "Paying off high-interest debt first usually beats investing, since a guaranteed 20% 'return' from not paying credit card interest is hard for the market to match."},
+
+  {"id": "n25", "category": "fitness", "text": "Progressive overload just means doing slightly more over time — more weight, more reps, or more sets — otherwise the body has no reason to adapt."},
+  {"id": "n26", "category": "fitness", "text": "Rest days matter because muscle actually rebuilds stronger during recovery, not during the workout itself."},
+  {"id": "n27", "category": "fitness", "text": "Fixing posture from sitting all day is mostly about strengthening the upper back, not just 'sitting up straighter' for five minutes."},
+  {"id": "n28", "category": "fitness", "text": "Roughly 0.7-1g of protein per pound of bodyweight is the common target if you're trying to build or maintain muscle."},
+  {"id": "n29", "category": "fitness", "text": "A proper warm-up before heavy lifting is lighter sets of the same movement, not just a few minutes on a bike."},
+  {"id": "n30", "category": "fitness", "text": "10,000 steps a day is a decent rough target, but it was originally a marketing number from a Japanese pedometer, not a scientific threshold."},
+
+  {"id": "n31", "category": "programming", "text": "Async/await makes I/O-bound code faster because the program can go do other work while waiting on a network response instead of sitting idle."},
+  {"id": "n32", "category": "programming", "text": "The stack holds function calls and local variables with fixed sizes; the heap holds things that can grow and need to be managed more freely."},
+  {"id": "n33", "category": "programming", "text": "A database index is basically a sorted lookup structure that lets the database find rows without scanning the entire table."},
+  {"id": "n34", "category": "programming", "text": "Premature optimization is considered harmful because you often end up making unreadable code faster in a part of the program that was never actually the bottleneck."},
+  {"id": "n35", "category": "programming", "text": "Garbage collection frees memory for objects nothing in the program can reach anymore, roughly by tracing what's still reachable from the running code."},
+  {"id": "n36", "category": "programming", "text": "REST is simpler and cache-friendly for straightforward resources; GraphQL shines when clients need to ask for very specific, nested combinations of data."},
+
+  {"id": "n37", "category": "travel", "text": "Packing light for two weeks: one weather-appropriate capsule wardrobe, laundry halfway through, and skip 'just in case' items."},
+  {"id": "n38", "category": "travel", "text": "Japan is far less crowded (and cheaper) in late spring or early autumn than during cherry blossom or peak summer season."},
+  {"id": "n39", "category": "travel", "text": "Avoiding jet lag on long flights starts before takeoff — shift your sleep schedule a bit for a few days and get sunlight at the right times on arrival."},
+  {"id": "n40", "category": "travel", "text": "Flexible dates on flight search tools can save a surprising amount — flying one day earlier or later is sometimes half the price."},
+  {"id": "n41", "category": "travel", "text": "Renting a car abroad: check whether you need an International Driving Permit and whether the rental includes the insurance your credit card doesn't cover."},
+  {"id": "n42", "category": "travel", "text": "Travel insurance is usually worth it for a trip involving expensive non-refundable bookings or any real medical risk, and often skippable for a cheap weekend trip."},
+
+  {"id": "n43", "category": "gardening", "text": "Start seeds indoors roughly 6-8 weeks before the last expected frost so they're strong enough to transplant once it's warm."},
+  {"id": "n44", "category": "gardening", "text": "Tomato leaves curl in extreme heat as a defense mechanism to reduce water loss — often not disease, just the plant protecting itself."},
+  {"id": "n45", "category": "gardening", "text": "Composting kitchen scraps without the smell is mostly about balance — enough 'brown' material (dry leaves, cardboard) to offset the wet 'green' scraps."},
+  {"id": "n46", "category": "gardening", "text": "Companion planting pairs like tomatoes and basil aren't just folklore — some combinations genuinely help with pest deterrence or space efficiency."},
+  {"id": "n47", "category": "gardening", "text": "Most kitchen herbs want at least 6 hours of direct sunlight a day, which is more than most windowsills actually provide."},
+  {"id": "n48", "category": "gardening", "text": "Aphids can often be knocked back with a strong spray of water and some ladybugs, without reaching for a pesticide."},
+
+  {"id": "n49", "category": "misc", "text": "Repainted the vintage typewriter's carriage return lever with matte black enamel and swapped the platen rubber, which had gone rock hard after forty years."},
+  {"id": "n50", "category": "misc", "text": "The community choir is switching from sheet music to memorized pieces for the spring concert, which means six extra rehearsals before April."}
+]

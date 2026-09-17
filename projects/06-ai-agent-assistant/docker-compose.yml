@@ -1,0 +1,38 @@
+# Same pattern as Project 5 — backend + Ollama in containers, frontend
+# stays a plain `npm run dev` on your host.
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    # Explicit public DNS servers — needed for the wikipedia_search tool's
+    # outbound HTTP calls. Without this, some Docker Desktop setups fail to
+    # resolve external hostnames from inside a container even though raw
+    # outbound connectivity works fine (a Docker Desktop internal-DNS-proxy
+    # quirk, not anything about this project's own networking).
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    volumes:
+      - ./backend:/app
+      - chroma_data:/app/chroma_data
+      - hf_cache:/root/.cache
+    env_file:
+      - ./backend/.env
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+volumes:
+  chroma_data:
+  hf_cache:
+  ollama_data:

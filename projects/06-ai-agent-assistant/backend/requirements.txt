@@ -1,0 +1,16 @@
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-dotenv==1.0.1
+pydantic==2.9.2
+
+# Handbook search tool
+sentence-transformers==6.0.1
+numpy==2.5.3
+chromadb==1.5.9
+
+# LLM providers
+ollama==0.6.2
+openai==2.54.0
+
+# Wikipedia tool
+httpx==0.27.2

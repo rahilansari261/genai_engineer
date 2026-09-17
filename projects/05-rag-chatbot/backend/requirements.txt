@@ -1,0 +1,27 @@
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-dotenv==1.0.1
+pydantic==2.9.2
+
+# Embeddings + local vector DB (same as Project 4)
+sentence-transformers==6.0.1
+numpy==2.5.3
+chromadb==1.5.9
+
+# LLM providers for the generation step
+ollama==0.6.2
+# openai must satisfy langchain-openai's own >=2.45.0 constraint below —
+# unlike Projects 1/2 (openai==1.54.0 there), this project's Docker image
+# is fully isolated, so the two pins don't need to match.
+openai==2.54.0
+anthropic==0.39.0
+
+# The "framework" side of the raw-vs-framework comparison
+langchain-core==1.6.2
+langchain-text-splitters==1.1.2
+langchain-chroma==1.1.0
+langchain-ollama==1.1.0
+langchain-openai==1.6.1
+
+# Optional managed cloud vector DB (raw pipeline only)
+pinecone==10.0.0

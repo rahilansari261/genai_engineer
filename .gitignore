@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Generated vector DB data (rebuild with `python ingest.py`)
+chroma_data/
+
+# Node / Next.js
+node_modules/
+.next/
+next-env.d.ts
+
+# Env files (copy .env.example -> .env locally, never commit the real one)
+.env
+.env.local
+
+# OS
+.DS_Store

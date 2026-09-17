@@ -1,0 +1,6 @@
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+huggingface_hub==1.30.0
+ollama==0.6.2
+python-dotenv==1.0.1
+pydantic==2.9.2

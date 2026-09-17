@@ -1,0 +1,17 @@
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-dotenv==1.0.1
+pydantic==2.9.2
+python-multipart==0.0.12
+
+# LLM/vision/image/audio providers
+openai==2.54.0
+ollama==0.6.2
+huggingface_hub==1.30.0
+
+# Free local speech-to-text
+faster-whisper==1.1.0
+# faster-whisper's own utils module imports requests directly but doesn't
+# declare it as a dependency — without this, importing faster_whisper
+# fails with "No module named 'requests'" the moment it tries to load.
+requests==2.32.3

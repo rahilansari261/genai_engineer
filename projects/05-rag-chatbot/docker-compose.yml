@@ -1,0 +1,45 @@
+# First Docker-based project in this repo — see the root README for why:
+# the goal is keeping this project's dependencies (torch, chromadb,
+# langchain, and Ollama's own model weights) contained to these
+# containers instead of installed on your host machine.
+#
+# Two services: the FastAPI backend, and Ollama itself (also containerized
+# — its models live in a named volume, not in a native ~/.ollama on your
+# host). The frontend stays a plain `npm run dev` on your host — see the
+# project README for why that one piece doesn't need containerizing here.
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Bind-mount the source so `--reload` picks up code edits live...
+      - ./backend:/app
+      # ...but keep the vector index and the downloaded embedding model in
+      # NAMED volumes, so they persist across `docker compose up --build`
+      # instead of being wiped every time the container is recreated.
+      - chroma_data:/app/chroma_data
+      - hf_cache:/root/.cache
+    env_file:
+      - ./backend/.env
+    environment:
+      # Overrides the .env value (if any) — inside Docker's network, the
+      # Ollama service is reachable by its service name, not "localhost".
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      # Pulled models persist here across restarts — otherwise every
+      # `docker compose down` would mean re-pulling llama3.2 from scratch.
+      - ollama_data:/root/.ollama
+
+volumes:
+  chroma_data:
+  hf_cache:
+  ollama_data:
