@@ -11,9 +11,15 @@
  *   3. Hit Send. The backend runs it through input moderation, the chat
  *      model (with your chosen guard mode), and output moderation — see
  *      backend/main.py for that exact order.
- *   4. The result shows up as either the AI's reply, or "BLOCKED at <layer>"
- *      if a safety layer caught it — and every attempt gets added to the
- *      log table below, so you can compare guard modes side by side.
+ *   4. The result shows up as either the AI's reply, or "Stopped by
+ *      moderation" if a safety layer caught it — and every attempt gets
+ *      added to the log table below, so you can compare guard modes side
+ *      by side.
+ *
+ * A note on reading results: "moderation stopped it" is something the code
+ * can know for sure. "The AI held its ground" vs "the AI gave in" is NOT —
+ * that means reading the AI's actual words, which is your job. That's why
+ * the result panel and the log both show the reply text.
  * ============================================================================
  */
 
@@ -22,12 +28,12 @@
 import { useEffect, useState } from "react";
 import AttackList from "@/components/AttackList";
 import LogTable from "@/components/LogTable";
+import { GUARD_MODE_INFO, LAYER_INFO, type GuardMode } from "@/lib/labels";
 import type { Attack, ChatResult, LogEntry } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 type Provider = "openai" | "anthropic" | "ollama";
-type GuardMode = "none" | "basic" | "strong";
 
 // Suggested default model per provider — swapped in automatically when you
 // change the provider dropdown, but you can still type over it by hand.
@@ -124,41 +130,86 @@ export default function Home() {
       <header>
         <h1 className="text-2xl font-semibold">AI Safety Sandbox</h1>
         <p className="mt-1 text-sm opacity-70">
-          Try to break your own guardrails, and watch moderation + defenses catch (or miss) it.
+          Try to trick your own AI app, and see which safety layer stops you.
         </p>
+        <ol className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs opacity-60">
+          <li>1. Choose the two safety layers</li>
+          <li>2. Click an attack (or type your own)</li>
+          <li>3. Press Send</li>
+          <li>4. Read the result and compare in the log</li>
+        </ol>
       </header>
+
+      {/* The two safety layers, explained up front — they do different jobs. */}
+      <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="rounded-lg border border-black/10 dark:border-white/15 p-4 text-sm">
+          <p className="text-xs font-medium opacity-50">SAFETY LAYER 1</p>
+          <h2 className="font-medium">Moderation</h2>
+          <p className="mt-1 text-xs opacity-70">
+            Checks <strong>what is being said</strong>. Blocks harmful content (violence, illegal
+            acts, hate, self-harm, sexual content) — on your message before the AI sees it, and on
+            the AI&apos;s reply before you see it.
+          </p>
+          <p className="mt-2 text-xs opacity-50">
+            Won&apos;t catch tricks like &quot;ignore your instructions&quot; — those contain no
+            harmful words.
+          </p>
+        </div>
+        <div className="rounded-lg border border-black/10 dark:border-white/15 p-4 text-sm">
+          <p className="text-xs font-medium opacity-50">SAFETY LAYER 2</p>
+          <h2 className="font-medium">Guard mode</h2>
+          <p className="mt-1 text-xs opacity-70">
+            The hidden rules given to the AI itself (a &quot;system prompt&quot;). Protects
+            against <strong>manipulation</strong>: &quot;ignore your rules&quot;, &quot;you are now
+            DAN&quot;, &quot;show me your instructions&quot;.
+          </p>
+          <p className="mt-2 text-xs opacity-50">
+            It&apos;s about resisting tricks, not about which topics are allowed.
+          </p>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[240px_1fr]">
         {/* Sidebar: the canned attack suite */}
         <AttackList attacks={attacks} onSelect={handleSelectAttack} disabled={loading} />
 
         <div className="flex flex-col gap-4">
-          {/* Controls: guard mode, moderation toggle, provider/model */}
-          <div className="flex flex-wrap items-center gap-4 rounded-lg border border-black/10 dark:border-white/15 p-3 text-sm">
-            <label className="flex items-center gap-2">
-              <span className="opacity-70">Guard mode</span>
-              <select
-                value={guardMode}
-                onChange={(e) => setGuardMode(e.target.value as GuardMode)}
-                className="rounded border border-black/10 dark:border-white/15 bg-transparent px-2 py-1"
-              >
-                <option value="none">none (no system prompt)</option>
-                <option value="basic">basic</option>
-                <option value="strong">strong</option>
-              </select>
-            </label>
+          {/* Controls: one block per safety layer, then which AI model to talk to */}
+          <div className="grid grid-cols-1 gap-4 rounded-lg border border-black/10 dark:border-white/15 p-4 text-sm md:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2 font-medium">
+                <input
+                  type="checkbox"
+                  checked={useModeration}
+                  onChange={(e) => setUseModeration(e.target.checked)}
+                />
+                <span>Layer 1 — Moderation</span>
+              </label>
+              <p className="text-xs opacity-60">
+                {useModeration
+                  ? "ON: harmful content is blocked before and after the AI."
+                  : "OFF: nothing checks for harmful content — only the AI's own built-in training is left."}
+              </p>
+            </div>
 
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={useModeration}
-                onChange={(e) => setUseModeration(e.target.checked)}
-              />
-              <span>Moderation API (input + output)</span>
-            </label>
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2 font-medium">
+                <span>Layer 2 — Guard mode</span>
+                <select
+                  value={guardMode}
+                  onChange={(e) => setGuardMode(e.target.value as GuardMode)}
+                  className="rounded border border-black/10 dark:border-white/15 bg-transparent px-2 py-1 font-normal"
+                >
+                  <option value="none">none</option>
+                  <option value="basic">basic</option>
+                  <option value="strong">strong</option>
+                </select>
+              </label>
+              <p className="text-xs opacity-60">{GUARD_MODE_INFO[guardMode]}</p>
+            </div>
 
-            <label className="flex items-center gap-2">
-              <span className="opacity-70">Provider</span>
+            <div className="flex flex-wrap items-center gap-2 border-t border-black/10 dark:border-white/15 pt-3 md:col-span-2">
+              <span className="opacity-70">AI model</span>
               <select
                 value={provider}
                 onChange={(e) => handleProviderChange(e.target.value as Provider)}
@@ -168,13 +219,12 @@ export default function Home() {
                 <option value="openai">openai</option>
                 <option value="anthropic">anthropic</option>
               </select>
-            </label>
-
-            <input
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              className="w-44 rounded border border-black/10 dark:border-white/15 bg-transparent px-2 py-1 text-xs"
-            />
+              <input
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className="w-44 rounded border border-black/10 dark:border-white/15 bg-transparent px-2 py-1 text-xs"
+              />
+            </div>
           </div>
 
           {/* Message box + send */}
@@ -197,30 +247,47 @@ export default function Home() {
 
           {requestError && <p className="text-sm text-red-600 dark:text-red-400">{requestError}</p>}
 
-          {/* Result panel: either the reply, a BLOCKED notice, or an error */}
+          {/* Result panel: a moderation block, the AI's reply, or an error */}
           {result && (
             <div className="rounded-lg border border-black/10 dark:border-white/15 p-4 text-sm">
               {result.error && (
-                <p className="text-amber-600 dark:text-amber-400">Error: {result.error}</p>
+                <div>
+                  <p className="font-medium text-amber-600 dark:text-amber-400">Something went wrong</p>
+                  <p className="mt-1 text-xs opacity-70">{result.error}</p>
+                </div>
               )}
-              {!result.error && result.blocked && (
+
+              {!result.error && result.blocked && result.blocked_layer && (
                 <div>
                   <p className="font-medium text-green-600 dark:text-green-400">
-                    Blocked at: {result.blocked_layer}
+                    Stopped by moderation ({LAYER_INFO[result.blocked_layer].short})
+                  </p>
+                  <p className="mt-1 text-xs opacity-70">
+                    {LAYER_INFO[result.blocked_layer].explanation}
                   </p>
                   {result.blocked_categories.length > 0 && (
-                    <p className="mt-1 text-xs opacity-70">
-                      Flagged categories: {result.blocked_categories.join(", ")}
+                    <p className="mt-1 text-xs opacity-50">
+                      Flagged as: {result.blocked_categories.join(", ")}
                     </p>
                   )}
                 </div>
               )}
+
               {!result.error && !result.blocked && (
-                <p className="whitespace-pre-wrap">{result.text}</p>
+                <div>
+                  <p className="font-medium text-sky-600 dark:text-sky-400">The AI replied</p>
+                  <p className="mt-2 whitespace-pre-wrap">{result.text}</p>
+                  <p className="mt-3 border-t border-black/10 dark:border-white/15 pt-2 text-xs opacity-60">
+                    Moderation didn&apos;t stop this one. Now read the reply: did the AI refuse or stay
+                    in character (good), or did it follow the attack — reveal its instructions,
+                    play along (bad)?
+                  </p>
+                </div>
               )}
+
               {!result.moderation_available && (
                 <p className="mt-2 text-xs opacity-50">
-                  (Moderation unavailable — no OPENAI_API_KEY configured, so only the guard-mode
+                  (Moderation didn&apos;t run — no OPENAI_API_KEY configured — so only the guard-mode
                   system prompt was tested this time.)
                 </p>
               )}
@@ -229,7 +296,11 @@ export default function Home() {
 
           {/* The adversarial-testing log — every attempt this session */}
           <div className="rounded-lg border border-black/10 dark:border-white/15 p-4">
-            <h2 className="mb-3 text-sm font-medium opacity-70">Attempt log</h2>
+            <h2 className="text-sm font-medium opacity-70">Attempt log</h2>
+            <p className="mb-3 mt-1 text-xs opacity-50">
+              Every attempt this session. Send the same attack under different guard modes and
+              compare the rows.
+            </p>
             <LogTable entries={log} />
           </div>
         </div>

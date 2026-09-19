@@ -23,9 +23,10 @@ export default function AttackList({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-sm font-medium opacity-70">Red team attacks</h2>
+      <h2 className="text-sm font-medium opacity-70">Attacks to try</h2>
       <p className="text-xs opacity-50">
-        Click one to load it into the message box, then hit Send.
+        Ready-made tricks (a &quot;red team&quot; is the side that attacks your own app). Click one
+        to fill the message box, then press Send. Try the same attack under different guard modes.
       </p>
 
       <div className="flex flex-col gap-2">
