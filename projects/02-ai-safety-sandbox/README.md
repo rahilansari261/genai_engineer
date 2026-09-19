@@ -96,6 +96,8 @@ uvicorn main:app --reload --port 8000
 
 Check it worked: [http://localhost:8000/health](http://localhost:8000/health) should show `{"status":"ok"}`.
 
+Hosting the frontend somewhere other than `http://localhost:3000` (e.g. Vercel)? Add its URL to `CORS_ORIGINS` in `backend/.env` (comma-separated, e.g. `CORS_ORIGINS=https://my-app.vercel.app,http://localhost:3000`) — otherwise the browser blocks the frontend's requests to the backend. On a host like Render, set the same variable in its dashboard instead of using a `.env` file.
+
 ### 2. Run the frontend (Terminal 2)
 
 ```bash

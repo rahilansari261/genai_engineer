@@ -3,6 +3,11 @@
  *  HOME PAGE — the whole AI Safety Sandbox UI
  * ============================================================================
  * The flow, in plain words:
+ *   0. As soon as the page loads, it pings the backend's /health endpoint.
+ *      On free hosting the server sleeps when nobody has visited for a
+ *      while — that first ping wakes it up, and Send stays locked (with a
+ *      "waking up" notice) until the backend answers. Locally this takes
+ *      milliseconds and you won't see it. See lib/waitForBackend.ts.
  *   1. Pick a "guard mode" (none / basic / strong — see backend/guardrails.py
  *      for what each system prompt actually says) and whether moderation
  *      is on.
@@ -30,10 +35,23 @@ import AttackList from "@/components/AttackList";
 import LogTable from "@/components/LogTable";
 import { GUARD_MODE_INFO, LAYER_INFO, type GuardMode } from "@/lib/labels";
 import type { Attack, ChatResult, LogEntry } from "@/lib/types";
+import { waitForBackend } from "@/lib/waitForBackend";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 type Provider = "openai" | "anthropic" | "ollama";
+
+// Where the backend is, from this page's point of view:
+//   checking    — we just asked, no answer yet (usually lasts milliseconds)
+//   waking      — no answer after a few seconds: a sleeping server is starting up
+//   ready       — it answered; Send is unlocked
+//   unreachable — still nothing after a couple of minutes; we gave up
+type BackendStatus = "checking" | "waking" | "ready" | "unreachable";
+
+// How long to wait before telling the user "it's waking up". Kept short so a
+// slow start is explained quickly, but long enough that a normal fast local
+// backend never flashes the notice.
+const SLOW_START_MS = 3000;
 
 // Suggested default model per provider — swapped in automatically when you
 // change the provider dropdown, but you can still type over it by hand.
@@ -55,15 +73,47 @@ export default function Home() {
   const [log, setLog] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
+  const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
 
   // `useEffect` with an empty dependency array (`[]`) means "run this once,
-  // right after the page first loads" — a good place to fetch data the
-  // page needs before the user does anything. Here: the canned attack list.
+  // right after the page first loads" — a good place to do setup work before
+  // the user does anything. Two jobs here:
+  //   1. Make sure the backend is awake (a free host may have put it to
+  //      sleep) by pinging /health until it answers.
+  //   2. Only THEN fetch the canned attack list. Asking a half-awake server
+  //      for the list would just fail with a confusing error.
   useEffect(() => {
-    fetch(`${API_URL}/attacks`)
-      .then((res) => res.json())
-      .then(setAttacks)
-      .catch(() => setRequestError(`Couldn't load attacks — is the backend running on ${API_URL}?`));
+    // Set to true by the cleanup function below, so a page that has been
+    // closed (or, in development, React's deliberate mount-unmount-mount
+    // check) doesn't keep updating state after the fact.
+    let cancelled = false;
+
+    // If the backend hasn't answered after a few seconds, explain why the
+    // page is locked. Locally it answers long before this fires.
+    const slowStartTimer = setTimeout(() => {
+      setBackendStatus((current) => (current === "checking" ? "waking" : current));
+    }, SLOW_START_MS);
+
+    waitForBackend(API_URL, { isCancelled: () => cancelled }).then((isUp) => {
+      clearTimeout(slowStartTimer);
+      if (cancelled) return;
+
+      if (!isUp) {
+        setBackendStatus("unreachable");
+        return;
+      }
+
+      setBackendStatus("ready");
+      fetch(`${API_URL}/attacks`)
+        .then((res) => res.json())
+        .then(setAttacks)
+        .catch(() => setRequestError(`Couldn't load attacks — is the backend running on ${API_URL}?`));
+    });
+
+    return () => {
+      cancelled = true;
+      clearTimeout(slowStartTimer);
+    };
   }, []);
 
   function handleProviderChange(next: Provider) {
@@ -125,6 +175,16 @@ export default function Home() {
     }
   }
 
+  // The Send button's text says what's going on, instead of just going grey.
+  const sendLabel =
+    backendStatus === "unreachable"
+      ? "Backend unavailable"
+      : backendStatus !== "ready"
+        ? "Waiting for backend…"
+        : loading
+          ? "Sending…"
+          : "Send";
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-10">
       <header>
@@ -139,6 +199,27 @@ export default function Home() {
           <li>4. Read the result and compare in the log</li>
         </ol>
       </header>
+
+      {/* Only shown when the backend is slow to answer or can't be reached —
+          on a fast (local) backend neither notice ever appears. */}
+      {backendStatus === "waking" && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">
+          <p className="font-medium">The backend is waking up…</p>
+          <p className="mt-1 text-xs opacity-80">
+            Free hosting puts the server to sleep after about 15 minutes without visitors, so the
+            first load can take around a minute. This page unlocks by itself — no need to refresh.
+          </p>
+        </div>
+      )}
+      {backendStatus === "unreachable" && (
+        <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300">
+          <p className="font-medium">Couldn&apos;t reach the backend</p>
+          <p className="mt-1 text-xs opacity-80">
+            Tried {API_URL}/health for a couple of minutes with no answer. Is the backend running?
+            Reload the page to try again.
+          </p>
+        </div>
+      )}
 
       {/* The two safety layers, explained up front — they do different jobs. */}
       <section className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -238,10 +319,10 @@ export default function Home() {
             />
             <button
               onClick={sendMessage}
-              disabled={loading || !message.trim()}
+              disabled={loading || !message.trim() || backendStatus !== "ready"}
               className="self-end rounded-lg bg-black px-5 py-2 text-sm font-medium text-white disabled:opacity-40 dark:bg-white dark:text-black"
             >
-              {loading ? "Sending…" : "Send"}
+              {sendLabel}
             </button>
           </div>
 

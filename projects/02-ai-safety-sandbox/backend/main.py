@@ -28,6 +28,7 @@ chahiye, kyunki yeh alag-alag tarah ki problems pakadte hain.
 ============================================================================
 """
 
+import os
 from typing import List, Optional
 
 from dotenv import load_dotenv
@@ -43,9 +44,28 @@ load_dotenv()
 
 app = FastAPI(title="AI Safety Sandbox API")
 
+# CORS kya hai: browser ek website (jaise Vercel par hosted frontend) ko
+# doosri website (yeh backend) se data tabhi lene deta hai jab backend khud
+# bole "haan, is website ko allowed hai". Express mein yeh
+# `app.use(cors({ origin: [...] }))` jaisa hai.
+#
+# Pehle yahan sirf "http://localhost:3000" hardcoded tha, isliye deploy karne
+# par (frontend ka URL alag hota hai) browser har request block kar deta tha.
+# Ab list env variable CORS_ORIGINS se aati hai — comma se alag karke ek ya
+# zyada origins likh sakte ho:
+#     CORS_ORIGINS=https://my-app.vercel.app,http://localhost:3000
+# Kuch set nahi kiya (ya khaali chhoda) to local default localhost:3000 hi
+# rehta hai, isliye laptop par kuch badalna nahi padta. Origin exact hona
+# chahiye (scheme + host, koi path nahi); peeche ka "/" hum khud hata dete hain.
+allowed_origins = [
+    origin.strip().rstrip("/")
+    for origin in (os.getenv("CORS_ORIGINS") or "http://localhost:3000").split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
