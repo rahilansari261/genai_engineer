@@ -70,7 +70,10 @@ async def ollama_generate(req: OllamaRequest):
 
 class ClassifyRequest(BaseModel):
     text: str
-    model: str = "distilbert-base-uncased-finetuned-sst-2-english"
+    # Hugging Face Hub par model ID ka poora form "organisation/model-name"
+    # hota hai. Chhota naam ("distilbert-base-...", bina "distilbert/" ke)
+    # hf-inference provider reject kar deta hai: "Model not supported".
+    model: str = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
 
 
 class ClassifyResponse(BaseModel):

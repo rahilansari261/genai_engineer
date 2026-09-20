@@ -21,8 +21,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 type Task = "classify" | "summarize";
 
+// Model IDs on the Hub have the form "organisation/model-name". Always use
+// the full ID: the short form without "distilbert/" is rejected by the
+// hf-inference provider with "Model not supported by provider".
 const DEFAULT_MODEL: Record<Task, string> = {
-  classify: "distilbert-base-uncased-finetuned-sst-2-english",
+  classify: "distilbert/distilbert-base-uncased-finetuned-sst-2-english",
   summarize: "sshleifer/distilbart-cnn-12-6",
 };
 
