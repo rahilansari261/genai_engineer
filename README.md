@@ -48,8 +48,7 @@ Update the Status column yourself as you go (⚪ Not started → 🟡 In progres
 ## Global setup
 
 - **Node.js** 20+ and npm — every project's frontend runs natively with `npm run dev`
-- **Projects 1-4**: **Python** 3.11+ for the backend — each has its own `requirements.txt`; create a venv per project: `python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. Also **Ollama** installed natively — [ollama.com](https://ollama.com), then `ollama pull llama3.2`.
-- **Projects 5+**: **Docker** and **Docker Compose** instead of a Python venv — each backend (and Ollama itself) runs in containers via that project's `docker-compose.yml`, so heavier dependencies (`torch`, `chromadb`, `langchain`, Ollama's model weights) stay off your host machine. See each project's own README for the exact commands.
+- **Python** 3.11+ for every project's backend — each has its own `requirements.txt`; create a venv per project: `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`. Also **Ollama** installed natively — [ollama.com](https://ollama.com), then `ollama pull llama3.2` (individual projects pull other models too, e.g. `moondream` for vision — see each project's own README).
 - **API keys (optional)** — copy each project's `.env.example` to `.env` and fill in what you have:
   - `OPENAI_API_KEY` — [platform.openai.com](https://platform.openai.com)
   - `ANTHROPIC_API_KEY` — [console.anthropic.com](https://console.anthropic.com)

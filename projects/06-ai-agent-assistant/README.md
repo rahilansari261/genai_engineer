@@ -24,7 +24,7 @@ The roadmap names this node, but by the time this project was built, OpenAI's ow
 
 ## Tech stack
 
-Python/FastAPI backend, three agent engines sharing one tool registry, Next.js frontend that renders every engine's step-by-step trace (thought → action → observation) the same way. Backend + Ollama run in Docker, same as Project 5.
+Python/FastAPI backend, three agent engines sharing one tool registry, Next.js frontend that renders every engine's step-by-step trace (thought → action → observation) the same way. Same setup as every other project: a Python venv for the backend, Ollama installed natively on your machine, `npm run dev` for the frontend.
 
 ## How it works, in one picture
 
@@ -66,31 +66,35 @@ Two real things surfaced during verification, both left as-is rather than smooth
 
 ## Setup & run
 
-Same Docker-based pattern as Project 5: backend + Ollama in containers, frontend runs natively.
-
-### 1. Start the backend + Ollama
+You need [Ollama](https://ollama.com) installed and running on your machine (it listens on `localhost:11434` by default), with a model pulled:
 
 ```bash
-cd projects/06-ai-agent-assistant
-cp backend/.env.example backend/.env   # OPENAI_API_KEY optional — ReAct + Ollama works with nothing filled in
-docker compose up --build
+ollama pull llama3.2
+```
+
+### 1. Set up and build the handbook search index (Terminal 1, one-time step)
+
+```bash
+cd projects/06-ai-agent-assistant/backend
+
+python3 -m venv .venv
+source .venv/bin/activate        # on Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+cp .env.example .env   # OPENAI_API_KEY optional — ReAct + Ollama works with nothing filled in
+
+python ingest.py
+```
+
+### 2. Run the backend (same terminal)
+
+```bash
+uvicorn main:app --reload --port 8000
 ```
 
 Check it worked: [http://localhost:8000/health](http://localhost:8000/health).
 
-### 2. Pull an Ollama model (one-time)
-
-```bash
-docker compose exec ollama ollama pull llama3.2
-```
-
-### 3. Build the handbook search index (one-time)
-
-```bash
-docker compose exec backend python ingest.py
-```
-
-### 4. Run the frontend
+### 3. Run the frontend (Terminal 2)
 
 ```bash
 cd projects/06-ai-agent-assistant/frontend
@@ -100,10 +104,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). The ReAct engine (Ollama) works with zero API keys — try it first, then add `OPENAI_API_KEY` to unlock the other two engines.
 
-### 5. To stop everything
+### 4. To stop everything
 
-`Ctrl+C` the frontend, then `docker compose down` from `projects/06-ai-agent-assistant/`.
+`Ctrl+C` in both terminals.
 
-**If tools that need the network (Wikipedia search, or the handbook model download) fail with a DNS-looking error** — this project's `docker-compose.yml` already pins the backend to public DNS servers (`8.8.8.8`, `1.1.1.1`) to work around a Docker Desktop internal-DNS-proxy quirk that showed up during testing; if you still hit it, that's the block to look at first.
-
-Note: like every other project's backend, this one publishes port 8000 (and 11434 for Ollama) — don't run another project's backend at the same time without changing ports.
+Note: this project's backend also defaults to port 8000. Don't run it at the same time as another project's backend without changing one of their ports (`uvicorn main:app --port 8030`, and update the frontend's `.env.local` to match).

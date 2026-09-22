@@ -26,7 +26,7 @@ Projects 02, 05, 06, and 07 directly — most of this backend is those projects'
 
 ## Tech stack
 
-Python/FastAPI backend (Docker + Ollama, same as Projects 5-7), Next.js frontend as one chat interface — text, image attachment, and voice input; a live reasoning trace per message; generated images inline; a prominent safety on/off toggle; a running session cost meter.
+Python/FastAPI backend (Python venv + native Ollama, same as every other project), Next.js frontend as one chat interface — text, image attachment, and voice input; a live reasoning trace per message; generated images inline; a prominent safety on/off toggle; a running session cost meter.
 
 ## How it works, in one picture
 
@@ -77,32 +77,36 @@ Real results from live testing against llama3.2 (free, local) — nothing here i
 
 ## Setup & run
 
-Same Docker-based pattern as Projects 5-7: backend + Ollama in containers, frontend runs natively.
-
-### 1. Start the backend + Ollama
+You need [Ollama](https://ollama.com) installed and running on your machine (it listens on `localhost:11434` by default), with both models pulled (skip either one you already have from an earlier project — Ollama's models are shared across your machine):
 
 ```bash
-cd projects/08-capstone-ai-copilot
-cp backend/.env.example backend/.env   # all keys optional — see below for what each unlocks
-docker compose up --build
+ollama pull llama3.2     # reasoning
+ollama pull moondream    # vision
+```
+
+### 1. Set up and build the handbook search index (Terminal 1, one-time step)
+
+```bash
+cd projects/08-capstone-ai-copilot/backend
+
+python3 -m venv .venv
+source .venv/bin/activate        # on Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+cp .env.example .env   # all keys optional — see below for what each unlocks
+
+python ingest.py
+```
+
+### 2. Run the backend (same terminal)
+
+```bash
+uvicorn main:app --reload --port 8000
 ```
 
 Check it worked: [http://localhost:8000/health](http://localhost:8000/health).
 
-### 2. Pull the models (one-time)
-
-```bash
-docker compose exec ollama ollama pull llama3.2     # reasoning
-docker compose exec ollama ollama pull moondream    # vision
-```
-
-### 3. Build the handbook search index (one-time)
-
-```bash
-docker compose exec backend python ingest.py
-```
-
-### 4. Run the frontend
+### 3. Run the frontend (Terminal 2)
 
 ```bash
 cd projects/08-capstone-ai-copilot/frontend
@@ -125,9 +129,9 @@ Everything except image generation: reasoning (Ollama), vision (Ollama `moondrea
 
 ### To stop everything
 
-`Ctrl+C` the frontend, then `docker compose down` from `projects/08-capstone-ai-copilot/`.
+`Ctrl+C` in both terminals.
 
-Note: like every other project's backend, this one publishes port 8000 (and 11434 for Ollama) — don't run another project's backend at the same time without changing ports. This project's `docker-compose.yml` also pins public DNS servers, the same Docker Desktop DNS fix documented in Project 6's README.
+Note: this project's backend also defaults to port 8000. Don't run it at the same time as another project's backend without changing one of their ports (`uvicorn main:app --port 8030`, and update the frontend's `.env.local` to match).
 
 ---
 

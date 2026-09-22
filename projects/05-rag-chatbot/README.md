@@ -21,11 +21,7 @@ Two questions come up the moment you want an LLM to answer from *your* documents
 
 ## Tech stack
 
-Python/FastAPI backend (a hand-rolled pipeline and a LangChain pipeline, side by side), Chroma (local) with an optional Pinecone (managed cloud) backend for the hand-rolled pipeline, Next.js chat UI with inline source citations. **This is the first project in the repo that runs its backend in Docker** — see below for why.
-
-## Why Docker, starting with this project
-
-Every project so far installed its dependencies into a Python venv on your own machine. This one pulls in a genuinely heavy stack — `torch`, `chromadb`, `langchain`, `pinecone` — and going forward, this repo runs backends like that in Docker instead, so those dependencies (and Ollama's own model weights) stay contained to a container rather than piling up on your host. The frontend stays a plain `npm run dev` on your host — lighter weight, and better for hot-reload during dev.
+Python/FastAPI backend (a hand-rolled pipeline and a LangChain pipeline, side by side), Chroma (local) with an optional Pinecone (managed cloud) backend for the hand-rolled pipeline, Next.js chat UI with inline source citations. Same setup as Projects 1-4: a Python venv for the backend, Ollama installed natively on your machine, `npm run dev` for the frontend.
 
 ## How it works, in one picture
 
@@ -65,38 +61,41 @@ Every code file has big comments explaining what it does and why. Read `backend/
 
 ## Setup & run
 
-The backend runs in Docker; the frontend runs natively with `npm run dev`.
-
-### 1. Start the backend + Ollama (one command)
+You need [Ollama](https://ollama.com) installed and running on your machine (it listens on `localhost:11434` by default), with a model pulled:
 
 ```bash
-cd projects/05-rag-chatbot
+ollama pull llama3.2
+```
+
+### 1. Set up and build the indexes (Terminal 1, one-time step)
+
+```bash
+cd projects/05-rag-chatbot/backend
+
+python3 -m venv .venv            # on Windows: python -m venv .venv
+source .venv/bin/activate        # on Windows: .venv\Scripts\activate
+pip install -r requirements.txt  # inside the venv, plain `python` and `pip` work
 
 # All keys optional — the app runs fully on the free local Chroma index +
 # Ollama with nothing filled in here at all.
-cp backend/.env.example backend/.env
+cp .env.example .env
 
-docker compose up --build
+# Builds the vector indexes from docs/*.md. Re-run this any time you edit
+# a doc in docs/.
+python ingest.py
 ```
 
-First run takes a while — the backend image installs `torch`, `chromadb`, and `langchain`, all cached by Docker afterward so it's fast on every run after the first. Leave this running; check it worked with [http://localhost:8000/health](http://localhost:8000/health).
+First run takes a while — `pip install` pulls in `torch`, `chromadb`, and `langchain`, and `ingest.py` downloads the embedding model (skipped if you already ran Project 4, which uses the same one). You should see a chunk count printed for the raw pipeline's Chroma index, the LangChain pipeline's Chroma index, and (if you added a `PINECONE_API_KEY`) the Pinecone index too.
 
-### 2. Pull an Ollama model (one-time, in a second terminal)
+### 2. Run the backend (same terminal)
 
 ```bash
-cd projects/05-rag-chatbot
-docker compose exec ollama ollama pull llama3.2
+uvicorn main:app --reload --port 8000
 ```
 
-### 3. Build the indexes (one-time, or after editing backend/docs/*.md)
+Check it worked: [http://localhost:8000/health](http://localhost:8000/health) should show `{"status":"ok"}`.
 
-```bash
-docker compose exec backend python ingest.py
-```
-
-You should see a chunk count printed for the raw pipeline's Chroma index, the LangChain pipeline's Chroma index, and (if you added a `PINECONE_API_KEY`) the Pinecone index too.
-
-### 4. Run the frontend (Terminal 2, or a third terminal)
+### 3. Run the frontend (Terminal 2)
 
 ```bash
 cd projects/05-rag-chatbot/frontend
@@ -106,8 +105,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — both pipelines should already show as indexed.
 
-### 5. To stop everything
+### 4. To stop everything
 
-`Ctrl+C` the frontend, then `docker compose down` from `projects/05-rag-chatbot/` (add `-v` to also delete the vector index and downloaded Ollama model, if you want a truly clean slate next time).
+`Ctrl+C` in both terminals. The vector index lives in `backend/chroma_data/` (git-ignored) — delete that folder and re-run `python ingest.py` if you want a clean slate.
 
-Note: like every other project's backend, this one also publishes port 8000 (and now 11434 for Ollama too) — don't run another project's backend at the same time without changing ports.
+Note: this project's backend also defaults to port 8000. Don't run it at the same time as another project's backend without changing one of their ports (`uvicorn main:app --port 8030`, and update the frontend's `.env.local` to match).

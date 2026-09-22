@@ -21,7 +21,7 @@ The roadmap also lists "LangChain / LlamaIndex for Multimodal Apps." This projec
 
 ## Builds on
 
-Nothing structurally required, but reuses the provider-comparison mindset from Project 1 and the graceful-degradation pattern (missing key → clear message, not a crash) from every project before it. Backend + Ollama run in Docker, same pattern as Projects 5 and 6.
+Nothing structurally required, but reuses the provider-comparison mindset from Project 1 and the graceful-degradation pattern (missing key → clear message, not a crash) from every project before it.
 
 ## How it works, in one picture
 
@@ -60,27 +60,34 @@ Real, unstaged results from live testing, not assumed:
 
 ## Setup & run
 
-Same Docker-based pattern as Projects 5 and 6: backend + Ollama in containers, frontend runs natively.
-
-### 1. Start the backend + Ollama
+You need [Ollama](https://ollama.com) installed and running on your machine (it listens on `localhost:11434` by default), with the free vision model pulled, plus a text model for the Voice Assistant tab's free reply step (skip this second pull if you already have `llama3.2` from another project — Ollama's models are shared across your machine, not per-project like Docker volumes were):
 
 ```bash
-cd projects/07-multimodal-assistant
-cp backend/.env.example backend/.env   # all keys optional — see below for what each unlocks
-docker compose up --build
+ollama pull moondream
+ollama pull llama3.2
+```
+
+### 1. Set up the backend (Terminal 1)
+
+```bash
+cd projects/07-multimodal-assistant/backend
+
+python3 -m venv .venv
+source .venv/bin/activate        # on Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+cp .env.example .env   # all keys optional — see below for what each unlocks
+```
+
+### 2. Run the backend (same terminal)
+
+```bash
+uvicorn main:app --reload --port 8000
 ```
 
 Check it worked: [http://localhost:8000/health](http://localhost:8000/health).
 
-### 2. Pull the free vision model (one-time)
-
-```bash
-docker compose exec ollama ollama pull moondream
-```
-
-For the Voice Assistant tab's free reply step, also pull a text model if you haven't in another project's Ollama volume (each project has its own): `docker compose exec ollama ollama pull llama3.2`.
-
-### 3. Run the frontend
+### 3. Run the frontend (Terminal 2)
 
 ```bash
 cd projects/07-multimodal-assistant/frontend
@@ -102,6 +109,6 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### To stop everything
 
-`Ctrl+C` the frontend, then `docker compose down` from `projects/07-multimodal-assistant/`.
+`Ctrl+C` in both terminals.
 
-Note: like every other project's backend, this one publishes port 8000 (and 11434 for Ollama) — don't run another project's backend at the same time without changing ports. This project's `docker-compose.yml` also pins public DNS servers (`8.8.8.8`, `1.1.1.1`) for the same Docker Desktop DNS quirk documented in Project 6's README.
+Note: this project's backend also defaults to port 8000. Don't run it at the same time as another project's backend without changing one of their ports (`uvicorn main:app --port 8030`, and update the frontend's `.env.local` to match).
