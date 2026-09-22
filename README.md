@@ -1,4 +1,4 @@
-# AI Engineer — Learning Path 
+# GEN-AI Engineer — Learning Path 
 
 ## What is this repo?
 
