@@ -27,12 +27,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+load_dotenv()
 import rag_langchain
 import rag_raw
 import vector_store
 from docs_loader import load_docs
 
-load_dotenv()
 
 app = FastAPI(title="RAG Chatbot API")
 
